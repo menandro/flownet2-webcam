@@ -9,7 +9,6 @@ import caffe
 import tempfile
 from math import ceil
 import time
-#from cv2 import *
 import cv2
 
 UNKNOWN_FLOW_THRESH = 1e7
@@ -110,21 +109,17 @@ def compute_color(u, v):
 parser = argparse.ArgumentParser()
 parser.add_argument('caffemodel', help='path to model')
 parser.add_argument('deployproto', help='path to deploy prototxt template')
-#parser.add_argument('listfile', help='one line should contain paths "img0.ext img1.ext out.flo"')
 parser.add_argument('--gpu',  help='gpu id to use (0, 1, ...)', default=0, type=int)
-#parser.add_argument('--verbose',  help='whether to output all caffe logging', action='store_true')
 
 args = parser.parse_args()
 
 if(not os.path.exists(args.caffemodel)): raise BaseException('caffemodel does not exist: '+args.caffemodel)
 if(not os.path.exists(args.deployproto)): raise BaseException('deploy-proto does not exist: '+args.deployproto)
-#if(not os.path.exists(args.listfile)): raise BaseException('listfile does not exist: '+args.listfile)
 
 width = -1
 height = -1
 
 num_blobs = 2
-#input_data = []
 
 caffe.set_device(args.gpu)
 caffe.set_mode_gpu()
@@ -172,23 +167,13 @@ while (True):
     input_dict = {}
     input_dict[net.inputs[0]] = input_data[0]
     input_dict[net.inputs[1]] = input_data[1]
-    #for blob_idx in range(num_blobs):
-        #input_dict[net.inputs[blob_idx]] = input_data[blob_idx]
     
     net.forward(**input_dict)
 
     blob = np.squeeze(net.blobs['predict_flow_final'].data).transpose(1, 2, 0)
 
-    #print("it took", time.time() - start, "seconds.")
-    #print(blob.size)
-    #print(blob.shape)
-   
-    #print(fl.shape)
-
     fps = 1.0/(time.time() - start)
     flow = compute_color(blob[:, :, 0]/50, blob[:, :, 1]/50)
-    #fl = np.zeros((height, width))
-    #flow = (np.dstack((fl, blob)) / 50)
     
     cv2.putText(img1, "{:.2f}".format(fps) + ' fps', (0, 12), cv2.FONT_HERSHEY_PLAIN, 1, (128, 128, 255))
     cv2.putText(img1, "Press 'q' to quit", (0, 24), cv2.FONT_HERSHEY_PLAIN, 1, (128, 128, 255))
@@ -197,23 +182,6 @@ while (True):
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    
-    #def readFlow(name):
-    #    if name.endswith('.pfm') or name.endswith('.PFM'):
-    #        return readPFM(name)[0][:,:,0:2]
-#
-     #   f = open(name, 'rb')
-
-     #   header = f.read(4)
-     #   if header.decode("utf-8") != 'PIEH':
-      #      raise Exception('Flow file header does not contain PIEH')
-#
-      #  width = np.fromfile(f, np.int32, 1).squeeze()
-     #   height = np.fromfile(f, np.int32, 1).squeeze()
-
-     #   flow = np.fromfile(f, np.float32, width * height * 2).reshape((height, width, 2))
-
-     #   return flow.astype(np.float32)
 
 def writeFlow(name, flow):  
     f = open(name, 'wb')
@@ -221,7 +189,5 @@ def writeFlow(name, flow):
     np.array([flow.shape[1], flow.shape[0]], dtype=np.int32).tofile(f)
     flow = flow.astype(np.float32)
     flow.tofile(f)
-
-#writeFlow('/media/cvlnas-ew202/menandro/data/Kitti2012/training/flow.flo', blob)
 
 cam.release()
