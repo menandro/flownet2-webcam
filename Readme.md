@@ -1,4 +1,5 @@
-Script for running flownet2 with webcam. Paste in "scripts" folder of flownet2.
+Script for running flownet2 with webcam. Paste in "scripts" folder of flownet2. 
+Tested with OpenCV3.2.0
 
 Usage:
     python ./scripts/run-flownet-webcam.py weights.caffemodel deploy.prototxt
